@@ -13,5 +13,4 @@ protocol FeedLoader {
 	func load(completion: @escaping (LoadFeedResult) -> Void)
 }
 
-// test2
 
