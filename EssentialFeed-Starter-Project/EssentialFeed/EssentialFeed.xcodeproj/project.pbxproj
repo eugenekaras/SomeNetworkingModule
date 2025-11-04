@@ -37,6 +37,7 @@
 		E9D1C3212E9FD4F5009F520E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				HTTPClient.swift,
 				RemoteFeedLoader.swift,
 			);
 			target = 080EDEF021B6DA7E00813479 /* EssentialFeed */;
