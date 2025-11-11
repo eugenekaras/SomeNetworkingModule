@@ -21,7 +21,7 @@ class URLSessionHTTPClient {
         session.dataTask(with: url) { data, response, error in
             if let error {
                 compleation(.failure(error))
-            } else if let data = data, data.count > 0, let response = response as? HTTPURLResponse {
+            } else if let data = data, let response = response as? HTTPURLResponse {
                 compleation(.succes(data, response))
             } else {
                 compleation(.failure(UnexpectedValueRepresentation()))
@@ -69,7 +69,6 @@ class URLSessionHTTPClientTests: XCTestCase {
     func test_get_fromURL_failsOnAllInvalidRepresentationCases() {
         XCTAssertNotNil(resultErrorFor(data: nil, response: nil, error: nil))
         XCTAssertNotNil(resultErrorFor(data: nil, response: nonHTTPURLResponse(), error: nil))
-        XCTAssertNotNil(resultErrorFor(data: nil, response: anyHTTPURLResponse(), error: nil))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nil, error: nil))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nil, error: anyNSError()))
         XCTAssertNotNil(resultErrorFor(data: nil, response: nonHTTPURLResponse(), error: anyNSError()))
@@ -100,8 +99,29 @@ class URLSessionHTTPClientTests: XCTestCase {
         wait(for: [exp], timeout: 1)
     }
     
-    // MARK: - Helper
+    func test_getFromURL_suceedsWithEmptyDataOnHTTPURLResponseWithNilData() {
+        let response = anyHTTPURLResponse()
+        URLProtocolStub.stub(data: nil, response: response, error: nil)
+        let exp = expectation(description: "Wait for complition")
+        makeSUT().get(from: anyURL()) { result in
+            switch result {
+            case let .succes(receivedData, receivedReponse):
+                let emptyData = Data()
+                XCTAssertEqual(receivedData, emptyData)
+                XCTAssertEqual(receivedReponse.url, response?.url)
+                XCTAssertEqual(receivedReponse.statusCode, response?.statusCode)
+            default:
+                XCTFail("Expected success, got \(result) instead")
+            }
+            
+            exp.fulfill()
+        }
+        
+        wait(for: [exp], timeout: 1)
+    }
     
+    // MARK: - Helper
+     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> URLSessionHTTPClient {
         let sut = URLSessionHTTPClient()
         trackForMemoryLeaks(sut, file: file, line: line)
